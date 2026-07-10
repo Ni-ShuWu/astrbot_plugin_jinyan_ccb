@@ -1,0 +1,17 @@
+{
+    "blacklist_groups": {
+        "description": "不发送禁言嘲讽的群号列表",
+        "type": "list",
+        "items": {
+            "type": "string"
+        },
+        "default": [],
+        "hint": "每行一个群号（纯数字），配置后这些群不会发送嘲讽消息"
+    },
+    "enable_at_all": {
+        "description": "是否 @ 被禁言用户",
+        "type": "bool",
+        "default": false,
+        "hint": "开启后嘲讽消息会 @ 被禁言的那个人"
+    }
+}

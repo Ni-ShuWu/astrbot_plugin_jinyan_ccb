@@ -1,8 +1,11 @@
 name: astrbot_plugin_jinyan_ccb
 display_name: 禁言嘲讽
 desc: 当群内有用户被禁言时，自动发送嘲讽消息
-version: v2.0.0
-author: Ni -ShuWu
+version: v2.1.0
+author: Ni-ShuWu
 repo: https://github.com/Ni-ShuWu/astrbot_plugin_jinyan_ccb
 support_platforms:
   - aiocqhttp
+config_schema:
+  - blacklist_groups
+  - enable_at_all
