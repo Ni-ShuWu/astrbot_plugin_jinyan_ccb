@@ -1,8 +1,7 @@
 import random
 from typing import List
 
-from astrbot.api import logger
-from astrbot.api.config import AstrBotConfig
+from astrbot.api import AstrBotConfig, logger
 from astrbot.api.event import filter, AstrMessageEvent
 from astrbot.api.star import Context, Star, register
 from astrbot.core.platform.sources.aiocqhttp.aiocqhttp_message_event import (
