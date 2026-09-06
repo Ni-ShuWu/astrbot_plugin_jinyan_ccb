@@ -77,6 +77,7 @@ class JinyanCCB(Star):
 
         sub_type = raw.get("sub_type", "")
         user_id = raw.get("user_id", "")
+        operator_id = raw.get("operator_id", "")
         duration = raw.get("duration", 0)
 
         if sub_type != "ban" or duration <= 0 or str(user_id) == "all":
@@ -90,9 +91,21 @@ class JinyanCCB(Star):
         except Exception:
             pass
 
+        admin_name = str(operator_id) or "管理员"
+        try:
+            info = await event.bot.get_group_member_info(
+                group_id=int(group_id), user_id=int(operator_id)
+            )
+            if info and "nickname" in info:
+                admin_name = info["nickname"]
+            elif info and "card" in info and info["card"]:
+                admin_name = info["card"]
+        except Exception:
+            pass
+
         duration_str = format_duration(duration)
         msg = random.choice(MOCK_MESSAGES).format(
-            user=user_name, duration=duration_str
+            user=user_name, duration=duration_str, admin=admin_name
         )
 
         if self.config.get("enable_at_all", False):
