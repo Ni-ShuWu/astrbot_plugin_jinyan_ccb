@@ -16,7 +16,7 @@ from .utils import format_duration
     "astrbot_plugin_jinyan_ccb",
     "Ni-ShuWu",
     "群成员被禁言时自动发送嘲讽消息",
-    "v2.1.0",
+    "v2.2.0",
 )
 class JinyanCCB(Star):
     def __init__(self, context: Context, config: AstrBotConfig):
