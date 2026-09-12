@@ -13,5 +13,23 @@
         "type": "bool",
         "default": false,
         "hint": "开启后嘲讽消息会 @ 被禁言的那个人"
+    },
+    "enable_abstract": {
+        "description": "启用抽象派文案",
+        "type": "bool",
+        "default": true,
+        "hint": "例如：闭嘴的艺术"
+    },
+    "enable_meta": {
+        "description": "启用元游戏文案",
+        "type": "bool",
+        "default": true,
+        "hint": "例如：请由模型代表发言"
+    },
+    "enable_short": {
+        "description": "启用短句快打文案",
+        "type": "bool",
+        "default": true,
+        "hint": "例如：用户喜提禁言"
     }
 }
