@@ -9,3 +9,6 @@ support_platforms:
 config_schema:
   - blacklist_groups
   - enable_at_all
+  - enable_abstract
+  - enable_meta
+  - enable_short

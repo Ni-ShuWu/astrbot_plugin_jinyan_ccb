@@ -55,7 +55,7 @@ MOCK_MESSAGES = [
     '{admin}闲来无事，决定拿 {user} 开刀祭天',
     '{user} 的账号被安装了物理防火墙 —— 禁言',
     '{user} 的嘴已被降级为只读模式',
-    'ChatGPT 在吗？帮我给 {user} 写一篇禁言悼词',
+    '{model} 在吗？帮我给 {user} 写一篇禁言悼词',
     '{user}：我被禁言了，准备开团 群友：乐.jpg',
     'QQ 群静音计划 1.0：目标 {user}，已锁定',
     '{admin}：这不得禁言一个助助兴？ {user}：？ {admin}：就你了',
@@ -199,4 +199,158 @@ MOCK_MESSAGES = [
     '{admin}轻轻敲了一下 {user} 的嘴，然后 ta 就不能说话了',
     '全体群友请注意：{user} 已被禁言，请大家降低音量以示尊重',
     '{user}：我只是发了句早安 {admin}：早安太多了（禁言）',
+    '{user}的嘴巴已被{admin}成功封印，先由{model}代替 ta 发言 ',
+    '{user}的嘴巴被{admin}拿胶带缠绕10086圈，就连{admin}都解不开',
+    '{model}在吗？你去嘲讽一下{user}',
+
 ]
+
+# New categorized messages. The original messages are classified below as well.
+ABSTRACT_MESSAGES = [
+    "闭嘴的艺术，{user} 今天终于开始创作了。",
+    "沉默不是空白，是 {user} 的最新作品。",
+    "{user} 的声音从世界上暂时退场。",
+    "一念起，万语生；一念止，{user} 被禁言。",
+    "{user} 把喧嚣交给过去，把安静留给现在。",
+    "这是一次关于沉默的现场装置艺术。",
+    "{user} 的发言像风，今天被关进了瓶子。",
+    "群聊忽然有了留白，署名是 {user}。",
+    "{user} 终于与自己的内心取得了静音连接。",
+    "声音消失之后，大家发现空气更有层次了。",
+    "{user} 被邀请参加沉默的长期展览。",
+    "禁言不是结束，是语言暂时的休止符。",
+    "{user} 的嘴进入冬眠，思想获得了回声。",
+    "今日主题：无声。主展品：{user}。",
+    "{admin} 为 {user} 按下了世界的暂停键。",
+    "语言退潮，{user} 留在安静的沙滩上。",
+    "{user} 的发言权被折成了一只纸鹤。",
+    "这不是禁言，这是群聊的极简主义。",
+    "{user} 以沉默完成了今天最完整的表达。",
+    "群里少了一种声音，多了一种秩序。",
+    "{user} 的喧闹被博物馆暂时收藏。",
+    "一场关于嘴巴与按钮的行为艺术结束了。",
+    "{user} 的语言被风吹散，只留下安静。",
+    "沉默落地，群聊获得片刻的光。",
+    "{admin} 把 {user} 的噪音调成了宇宙静音。",
+    "{user} 终于听见了自己没有说出口的话。",
+    "禁言如同一枚逗号，让 {user} 暂停一下。",
+    "今天的宁静有一个名字：{user}。",
+    "{user} 的发言像烟火，绽放后被按灭。",
+    "让我们凝视这份珍贵的无声。",
+    "{user} 离开麦克风，走进了语言的阴影。",
+    "群聊的空白处，写着 {user} 的名字。",
+    "{admin} 完成了一次温柔而精准的降噪。",
+    "{user} 的沉默比发言更有存在感。",
+]
+
+META_MESSAGES = [
+    "请由 {model} 代表 {user} 发言。",
+    "系统检测到 {user} 被禁言，已切换至观众模式。",
+    "{model} 正在为 {user} 生成一份沉默报告。",
+    "本次禁言由 {admin} 发起，{model} 负责旁白。",
+    "{user} 的聊天权限已更新为只读，版本号：{duration}。",
+    "错误 403：{user} 无法访问发言接口。",
+    "{model}：经过审议，{user} 暂不具备发言资格。",
+    "群聊补丁已安装：移除 {user} 的声音模块。",
+    "{user} 触发隐藏成就：被管理员写入静音日志。",
+    "直播间公告：{user} 已被切换为不可交互 NPC。",
+    "{admin} 执行了命令 /mute {user}，返回值：成功。",
+    "{model} 正在替 {user} 处理未发送的废话。",
+    "数据同步完成：{user} 的嘴巴与键盘暂时解绑。",
+    "本群今日热修复：修复 {user} 过度发言问题。",
+    "{user} 已进入只读副本，预计 {duration} 后重连。",
+    "提示：{admin} 将 {user} 的发言权限移动到了回收站。",
+    "{model} 认为 {user} 需要一次强制离线。",
+    "系统为 {user} 分配了新身份：沉默测试用户。",
+    "本次群聊请求被拦截，原因：{user} 话太多。",
+    "{user} 的麦克风权限已被管理员策略覆盖。",
+    "{model} 代替全体群友宣布：安静得很好。",
+    "审计记录：{admin} 对 {user} 实施了有效降噪。",
+    "{user} 的发言冷却时间已设置为 {duration}。",
+    "服务状态：群聊正常，{user} 静音。",
+    "{model} 为 {user} 生成了标题：《我为何不能说话》。",
+    "权限管理器报告：{user} 当前仅可阅读。",
+    "{admin} 发布了群聊更新，更新内容是禁言 {user}。",
+    "{user} 已被加入本群的低带宽模式。",
+    "模型建议：让 {user} 把剩余想法保存为草稿。",
+    "{duration} 内，{user} 的输出接口进入维护。",
+    "本条消息由 {model} 自动生成，目标用户是 {user}。",
+    "检测到异常噪音源，{admin} 已完成权限收敛。",
+    "{user} 的发言请求排队中，队列预计 {duration}。",
+]
+
+SHORT_MESSAGES = [
+    "{user} 喜提禁言。",
+    "{user}，安静。",
+    "{user} 已静音。",
+    "{user} 闭麦成功。",
+    "{user} 暂停发言。",
+    "{user}，今天先别说。",
+    "{user} 被按下暂停。",
+    "{user} 进入潜水模式。",
+    "{user} 的嘴下线了。",
+    "{user} 喜获只读权限。",
+    "{user} 被请出麦克风。",
+    "{user}，发言失败。",
+    "{user} 被静音处理。",
+    "{user} 先休息一下。",
+    "{user} 的声音没了。",
+    "{user} 进入冷却。",
+    "{user}，别挣扎了。",
+    "{user} 已被降噪。",
+    "{user} 获得沉默体验。",
+    "{user} 被管理员拿下。",
+    "{user} 现在只能看。",
+    "{user}，麦克风借我用用。",
+    "{user} 已切换静音。",
+    "{user} 今天免开尊口。",
+    "{user} 被锁麦了。",
+    "{user} 的发言权没收。",
+    "{user} 安静得很突然。",
+    "{user} 获得禁言套餐。",
+    "{user}，先听着。",
+    "{user} 已暂停输出。",
+    "{user} 这下清净了。",
+    "{user} 被迫闭麦。",
+    "{user} 发言权限归零。",
+]
+
+def _classify_legacy_messages() -> tuple[list[str], list[str], list[str]]:
+    """将旧文案按表达方式分流，避免历史文案全部落入 short。"""
+    abstract: list[str] = []
+    meta: list[str] = []
+    short: list[str] = []
+
+    abstract_markers = (
+        "艺术", "诗", "命运", "沉默", "安静", "空气", "世界", "灵魂",
+        "内心", "光", "留白", "快乐", "默哀", "天堂", "温柔", "风",
+    )
+    meta_markers = (
+        "系统", "检测", "权限", "接口", "模式", "版本", "AstrBot", "NapCat",
+        "模型", "{model}", "账号", "模块", "频道", "日志", "公告", "提示",
+        "状态", "请求", "服务", "注册", "套餐", "连接", "名单", "有效期",
+        "麦克风", "只读", "离线", "在线", "按钮", "防火墙", "API", "VIP",
+    )
+
+    for message in MOCK_MESSAGES:
+        if any(marker in message for marker in meta_markers):
+            meta.append(message)
+        elif any(marker in message for marker in abstract_markers):
+            abstract.append(message)
+        else:
+            short.append(message)
+    return abstract, meta, short
+
+
+# Keep MOCK_MESSAGES as a compatibility export while classifying its contents
+# by meaning rather than appending the entire legacy collection to short.
+LEGACY_ABSTRACT, LEGACY_META, LEGACY_SHORT = _classify_legacy_messages()
+ABSTRACT_MESSAGES.extend(LEGACY_ABSTRACT)
+META_MESSAGES.extend(LEGACY_META)
+SHORT_MESSAGES.extend(LEGACY_SHORT)
+
+FACTIONS = {
+    "abstract": ABSTRACT_MESSAGES,
+    "meta": META_MESSAGES,
+    "short": SHORT_MESSAGES,
+}

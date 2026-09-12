@@ -8,7 +8,8 @@ from astrbot.core.platform.sources.aiocqhttp.aiocqhttp_message_event import (
     AiocqhttpMessageEvent,
 )
 
-from .messages import MOCK_MESSAGES
+from .messages import FACTIONS
+from .model import random_model_text
 from .utils import format_duration
 
 
@@ -104,8 +105,20 @@ class JinyanCCB(Star):
             pass
 
         duration_str = format_duration(duration)
-        msg = random.choice(MOCK_MESSAGES).format(
-            user=user_name, duration=duration_str, admin=admin_name
+        enabled = [
+            name for name in FACTIONS
+            if self.config.get(f"enable_{name}", True)
+        ]
+        candidates = []
+        for name in enabled:
+            candidates.extend(FACTIONS[name])
+        if not candidates:
+            return
+        msg = random.choice(candidates).format(
+            user=user_name,
+            duration=duration_str,
+            admin=admin_name,
+            model=random_model_text(),
         )
 
         if self.config.get("enable_at_all", False):
