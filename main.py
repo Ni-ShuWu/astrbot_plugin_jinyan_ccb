@@ -1,4 +1,5 @@
 import random
+import time
 from typing import List
 
 from astrbot.api import AstrBotConfig, logger
@@ -17,12 +18,13 @@ from .utils import format_duration
     "astrbot_plugin_jinyan_ccb",
     "Ni-ShuWu",
     "群成员被禁言时自动发送嘲讽消息",
-    "v2.3.0",
+    "v2.3.1",
 )
 class JinyanCCB(Star):
     def __init__(self, context: Context, config: AstrBotConfig):
         super().__init__(context)
         self.config = config
+        self._recent_events: dict[tuple[str, str, str], float] = {}
 
     async def initialize(self):
         logger.info(
@@ -49,7 +51,11 @@ class JinyanCCB(Star):
             return False
         current.append(gid)
         self.config.put("blacklist_groups", current)
-        self.config.save()
+        try:
+            self.config.save()
+        except Exception as e:
+            logger.error(f"保存禁言嘲讽黑名单失败：{e}")
+            return False
         return True
 
     def _remove_from_blacklist(self, group_id: int) -> bool:
@@ -59,8 +65,26 @@ class JinyanCCB(Star):
             return False
         current.remove(gid)
         self.config.put("blacklist_groups", current)
-        self.config.save()
+        try:
+            self.config.save()
+        except Exception as e:
+            logger.error(f"保存禁言嘲讽黑名单失败：{e}")
+            return False
         return True
+
+    def _is_duplicate_event(self, group_id: object, user_id: object, operator_id: object) -> bool:
+        """在短时间内过滤适配器重复投递的同一禁言事件。"""
+        now = time.monotonic()
+        key = (str(group_id), str(user_id), str(operator_id))
+        self._recent_events = {
+            event_key: timestamp
+            for event_key, timestamp in self._recent_events.items()
+            if now - timestamp < 10
+        }
+        if key in self._recent_events:
+            return True
+        self._recent_events[key] = now
+        return False
 
     @filter.platform_adapter_type(filter.PlatformAdapterType.AIOCQHTTP)
     @filter.event_message_type(filter.EventMessageType.GROUP_MESSAGE)
@@ -72,35 +96,47 @@ class JinyanCCB(Star):
         if raw.get("post_type") != "notice" or raw.get("notice_type") != "group_ban":
             return
 
-        group_id = raw.get("group_id", 0)
+        group_id = raw.get("group_id")
+        user_id = raw.get("user_id")
+        operator_id = raw.get("operator_id")
+        if str(user_id) == "all":
+            return
+        try:
+            group_id_int = int(group_id)
+            user_id_int = int(user_id)
+            operator_id_int = int(operator_id)
+            duration = int(raw.get("duration", 0))
+        except (TypeError, ValueError):
+            logger.warning(f"忽略字段异常的禁言事件：{raw}")
+            return
+
         if str(group_id) in self._get_blacklist():
             return
 
         sub_type = raw.get("sub_type", "")
-        user_id = raw.get("user_id", "")
-        operator_id = raw.get("operator_id", "")
-        duration = raw.get("duration", 0)
 
-        if sub_type != "ban" or duration <= 0 or str(user_id) == "all":
+        if sub_type != "ban" or duration <= 0:
+            return
+        if self._is_duplicate_event(group_id, user_id, operator_id):
             return
 
         user_name = str(user_id)
         try:
-            info = await event.bot.get_stranger_info(user_id=int(user_id))
-            if info and "nickname" in info:
-                user_name = info["nickname"]
+            info = await event.bot.get_stranger_info(user_id=user_id_int)
+            if info and isinstance(info.get("nickname"), str) and info["nickname"].strip():
+                user_name = info["nickname"].strip()
         except Exception:
             pass
 
-        admin_name = str(operator_id) or "管理员"
+        admin_name = str(operator_id_int) or "管理员"
         try:
             info = await event.bot.get_group_member_info(
-                group_id=int(group_id), user_id=int(operator_id)
+                group_id=group_id_int, user_id=operator_id_int
             )
-            if info and "nickname" in info:
-                admin_name = info["nickname"]
-            elif info and "card" in info and info["card"]:
-                admin_name = info["card"]
+            if info and isinstance(info.get("card"), str) and info["card"].strip():
+                admin_name = info["card"].strip()
+            elif info and isinstance(info.get("nickname"), str) and info["nickname"].strip():
+                admin_name = info["nickname"].strip()
         except Exception:
             pass
 
@@ -114,24 +150,31 @@ class JinyanCCB(Star):
             candidates.extend(FACTIONS[name])
         if not candidates:
             return
-        msg = random.choice(candidates).format(
-            user=user_name,
-            duration=duration_str,
-            admin=admin_name,
-            model=random_model_text(),
-        )
+        try:
+            msg = random.choice(candidates).format(
+                user=user_name,
+                duration=duration_str,
+                admin=admin_name,
+                model=random_model_text(),
+            )
+        except (KeyError, ValueError):
+            logger.error("禁言嘲讽文案格式错误，跳过本次消息")
+            return
 
         if self.config.get("enable_at_all", False):
             try:
                 from astrbot.api.message_components import At
 
-                chain = [At(qq=int(user_id)), event.plain_result(" " + msg)]
+                chain = [At(qq=user_id_int), event.plain_result(" " + msg)]
                 await event.send(event.chain_result(chain))
                 return
             except Exception as e:
                 logger.warning(f"@用户失败，降级为普通消息：{e}")
 
-        await event.send(event.plain_result(msg))
+        try:
+            await event.send(event.plain_result(msg))
+        except Exception as e:
+            logger.warning(f"发送禁言嘲讽消息失败：{e}")
 
     @filter.platform_adapter_type(filter.PlatformAdapterType.AIOCQHTTP)
     @filter.event_message_type(filter.EventMessageType.GROUP_MESSAGE)
@@ -149,7 +192,13 @@ class JinyanCCB(Star):
             return
 
         action = parts[1]
-        cmd_group_id = int(parts[2]) if len(parts) > 2 else None
+        cmd_group_id = None
+        if len(parts) > 2:
+            try:
+                cmd_group_id = int(parts[2])
+            except ValueError:
+                yield event.plain_result("群号必须是数字")
+                return
 
         if action == "list":
             groups = self._get_blacklist()
@@ -162,6 +211,9 @@ class JinyanCCB(Star):
 
         elif action == "add" and cmd_group_id:
             if not self._add_to_blacklist(cmd_group_id):
+                if str(cmd_group_id) not in self._get_blacklist():
+                    yield event.plain_result("黑名单保存失败，请查看日志")
+                    return
                 yield event.plain_result(f"群 {cmd_group_id} 已在黑名单中")
                 return
             yield event.plain_result(
@@ -170,6 +222,9 @@ class JinyanCCB(Star):
 
         elif action == "remove" and cmd_group_id:
             if not self._remove_from_blacklist(cmd_group_id):
+                if str(cmd_group_id) in self._get_blacklist():
+                    yield event.plain_result("黑名单保存失败，请查看日志")
+                    return
                 yield event.plain_result(f"群 {cmd_group_id} 不在黑名单中")
                 return
             yield event.plain_result(
