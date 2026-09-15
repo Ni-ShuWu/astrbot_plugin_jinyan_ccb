@@ -7,6 +7,7 @@ AstrBot 插件，当群内有用户被禁言时，自动发送一条嘲讽消息
 - 当群成员被管理员禁言时，机器人自动在群里发送一句随机嘲讽语录
 - 内置 **300 条以上** 嘲讽文案，每次随机抽取，拒绝重复感
 - 文案分为抽象派、元游戏、短句快打三类，可分别开关
+- 支持在 AstrBot 插件配置界面填写**自定义嘲讽文案**，可选「仅内置 / 仅自定义 / 混合」三种来源
 - 支持 AstrBot 插件配置界面**配置黑名单群号**，无需重启即可生效
 - 支持通过指令快捷管理黑名单
 - 仅对 `ban` 类型、时长 > 0、非全员禁言的事件触发
@@ -35,6 +36,8 @@ AstrBot 插件，当群内有用户被禁言时，自动发送一条嘲讽消息
 | `enable_abstract` | bool | 是否启用抽象派文案 |
 | `enable_meta` | bool | 是否启用元游戏文案 |
 | `enable_short` | bool | 是否启用短句快打文案（也包含旧版文案） |
+| `custom_mode` | string | 嘲讽文案来源：`builtin` 仅内置 / `custom` 仅自定义 / `mixed` 混合 |
+| `custom_messages` | text | 自定义嘲讽文案，每行一条，仅当 `custom_mode` 不为 `builtin` 时生效 |
 
 黑名单的修改会立即写入 AstrBot 的插件配置文件并生效。
 
@@ -59,14 +62,36 @@ AstrBot 插件，当群内有用户被禁言时，自动发送一条嘲讽消息
 
 ## 自定义文案
 
-嘲讽文案位于 `messages.py`，分组列表为 `ABSTRACT_MESSAGES`、`META_MESSAGES` 和 `SHORT_MESSAGES`；原有文案也会自动按内容归入这三类，支持四个占位符：
+有两种方式自定义嘲讽文案。
+
+### 方式一：插件配置界面（推荐）
+
+在 AstrBot 后台「插件配置」中：
+
+- `custom_mode`：选择文案来源
+    - `builtin`：仅使用内置文案（默认，保持原有行为）
+    - `custom`：仅使用自定义文案
+    - `mixed`：内置文案与自定义文案一起随机抽取
+- `custom_messages`：填写自定义文案，**每行一条**
+
+支持以下占位符：
 
 - `{user}`：被禁言用户的昵称
 - `{admin}`：执行禁言的管理员昵称（获取失败时回退为 QQ 号或「管理员」）
 - `{duration}`：禁言时长（自动格式化为 秒/分钟/小时/天）
 - `{model}`：从 `model.py` 的 `MODEL_TEXTS` 列表中随机抽取的一段文本
 
-可直接修改 `model.py` 中的 `MODEL_TEXTS` 来自定义随机文本。
+例如（设术无为 `{admin}`，克莱为 `{user}`）：
+
+```
+{user}被{admin}禁言了{duration}唉，真是杂鱼❤️~~~
+```
+
+将发送为：`克莱被术无禁言了1小时唉，真是杂鱼❤️~~~`
+
+### 方式二：修改源码
+
+嘲讽文案位于 `messages.py`，分组列表为 `ABSTRACT_MESSAGES`、`META_MESSAGES` 和 `SHORT_MESSAGES`；原有文案也会自动按内容归入这三类。可直接修改 `model.py` 中的 `MODEL_TEXTS` 来自定义随机文本。
 
 ## 注意事项
 
