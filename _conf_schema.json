@@ -31,5 +31,27 @@
         "type": "bool",
         "default": true,
         "hint": "例如：用户喜提禁言"
+    },
+    "custom_mode": {
+        "description": "嘲讽文案来源模式",
+        "type": "string",
+        "default": "builtin",
+        "options": [
+            "builtin",
+            "custom",
+            "mixed"
+        ],
+        "labels": [
+            "仅内置文案",
+            "仅自定义文案",
+            "内置 + 自定义混合"
+        ],
+        "hint": "默认保持原有行为；选择「仅自定义」或「混合」时请在下方填写自定义文案"
+    },
+    "custom_messages": {
+        "description": "自定义嘲讽文案",
+        "type": "text",
+        "default": "",
+        "hint": "每行一条；支持占位符 {user}（被禁言者）、{admin}（操作者）、{duration}（禁言时长）、{model}"
     }
 }

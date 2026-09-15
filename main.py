@@ -18,7 +18,7 @@ from .utils import format_duration
     "astrbot_plugin_jinyan_ccb",
     "Ni-ShuWu",
     "群成员被禁言时自动发送嘲讽消息",
-    "v2.3.1",
+    "v2.4.0",
 )
 class JinyanCCB(Star):
     def __init__(self, context: Context, config: AstrBotConfig):
@@ -86,6 +86,58 @@ class JinyanCCB(Star):
         self._recent_events[key] = now
         return False
 
+    def _get_custom_messages(self) -> List[str]:
+        """读取自定义文案，兼容多行文本与列表两种配置形态。"""
+        raw = self.config.get("custom_messages", "") or ""
+        if isinstance(raw, list):
+            lines = [str(item) for item in raw]
+        else:
+            lines = str(raw).splitlines()
+        result: List[str] = []
+        seen: set[str] = set()
+        for line in lines:
+            text = line.strip()
+            if text and text not in seen:
+                seen.add(text)
+                result.append(text)
+        return result
+
+    def _build_candidates(self) -> List[str]:
+        """根据文案来源模式返回本次可用的文案候选池。"""
+        mode = self.config.get("custom_mode", "builtin")
+        if mode not in ("builtin", "custom", "mixed"):
+            logger.warning(f"未知的自定义文案模式「{mode}」，已按内置文案处理")
+            mode = "builtin"
+
+        candidates: List[str] = []
+        if mode in ("builtin", "mixed"):
+            for name in FACTIONS:
+                if self.config.get(f"enable_{name}", True):
+                    candidates.extend(FACTIONS[name])
+        if mode in ("custom", "mixed"):
+            custom = self._get_custom_messages()
+            if mode == "custom" and not custom:
+                logger.warning("已选择「仅自定义文案」但未配置 custom_messages，本次回退为内置文案")
+                for name in FACTIONS:
+                    if self.config.get(f"enable_{name}", True):
+                        candidates.extend(FACTIONS[name])
+            else:
+                candidates.extend(custom)
+        return candidates
+
+    @staticmethod
+    def _format_message(template: str, user: str, admin: str, duration: str) -> str:
+        """安全替换占位符，避免自定义文案中的花括号导致格式化异常。"""
+        text = template
+        for key, value in (
+            ("user", user),
+            ("admin", admin),
+            ("duration", duration),
+            ("model", random_model_text()),
+        ):
+            text = text.replace("{" + key + "}", value)
+        return text
+
     @filter.platform_adapter_type(filter.PlatformAdapterType.AIOCQHTTP)
     @filter.event_message_type(filter.EventMessageType.GROUP_MESSAGE)
     async def on_group_event(self, event: AiocqhttpMessageEvent):
@@ -141,25 +193,12 @@ class JinyanCCB(Star):
             pass
 
         duration_str = format_duration(duration)
-        enabled = [
-            name for name in FACTIONS
-            if self.config.get(f"enable_{name}", True)
-        ]
-        candidates = []
-        for name in enabled:
-            candidates.extend(FACTIONS[name])
+        candidates = self._build_candidates()
         if not candidates:
             return
-        try:
-            msg = random.choice(candidates).format(
-                user=user_name,
-                duration=duration_str,
-                admin=admin_name,
-                model=random_model_text(),
-            )
-        except (KeyError, ValueError):
-            logger.error("禁言嘲讽文案格式错误，跳过本次消息")
-            return
+        msg = self._format_message(
+            random.choice(candidates), user_name, admin_name, duration_str
+        )
 
         if self.config.get("enable_at_all", False):
             try:
