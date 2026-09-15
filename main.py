@@ -18,7 +18,7 @@ from .utils import format_duration
     "astrbot_plugin_jinyan_ccb",
     "Ni-ShuWu",
     "群成员被禁言时自动发送嘲讽消息",
-    "v2.4.0",
+    "v2.4.1",
 )
 class JinyanCCB(Star):
     def __init__(self, context: Context, config: AstrBotConfig):
@@ -44,19 +44,23 @@ class JinyanCCB(Star):
                 result.append(s)
         return result
 
+    def _save_blacklist(self, groups: List[str]) -> bool:
+        """将黑名单写入 AstrBot 插件配置并持久化。"""
+        try:
+            self.config["blacklist_groups"] = groups
+            self.config.save_config()
+        except Exception as e:
+            logger.error(f"保存禁言嘲讽黑名单失败：{e}")
+            return False
+        return True
+
     def _add_to_blacklist(self, group_id: int) -> bool:
         gid = str(group_id)
         current = self._get_blacklist()
         if gid in current:
             return False
         current.append(gid)
-        self.config.put("blacklist_groups", current)
-        try:
-            self.config.save()
-        except Exception as e:
-            logger.error(f"保存禁言嘲讽黑名单失败：{e}")
-            return False
-        return True
+        return self._save_blacklist(current)
 
     def _remove_from_blacklist(self, group_id: int) -> bool:
         gid = str(group_id)
@@ -64,13 +68,7 @@ class JinyanCCB(Star):
         if gid not in current:
             return False
         current.remove(gid)
-        self.config.put("blacklist_groups", current)
-        try:
-            self.config.save()
-        except Exception as e:
-            logger.error(f"保存禁言嘲讽黑名单失败：{e}")
-            return False
-        return True
+        return self._save_blacklist(current)
 
     def _is_duplicate_event(self, group_id: object, user_id: object, operator_id: object) -> bool:
         """在短时间内过滤适配器重复投递的同一禁言事件。"""
