@@ -4,6 +4,7 @@ from typing import List
 
 from astrbot.api import AstrBotConfig, logger
 from astrbot.api.event import filter, AstrMessageEvent
+from astrbot.api.message_components import At, Plain
 from astrbot.api.star import Context, Star, register
 from astrbot.core.platform.sources.aiocqhttp.aiocqhttp_message_event import (
     AiocqhttpMessageEvent,
@@ -18,7 +19,7 @@ from .utils import format_duration
     "astrbot_plugin_jinyan_ccb",
     "Ni-ShuWu",
     "群成员被禁言时自动发送嘲讽消息",
-    "v2.4.1",
+    "v2.4.3",
 )
 class JinyanCCB(Star):
     def __init__(self, context: Context, config: AstrBotConfig):
@@ -200,9 +201,8 @@ class JinyanCCB(Star):
 
         if self.config.get("enable_at_all", False):
             try:
-                from astrbot.api.message_components import At
-
-                chain = [At(qq=user_id_int), event.plain_result(" " + msg)]
+                # aiocqhttp 适配器会在 At 段后自动补一个空格文本段
+                chain = [At(qq=user_id_int), Plain(msg)]
                 await event.send(event.chain_result(chain))
                 return
             except Exception as e:
@@ -213,14 +213,16 @@ class JinyanCCB(Star):
         except Exception as e:
             logger.warning(f"发送禁言嘲讽消息失败：{e}")
 
+    @filter.permission_type(filter.PermissionType.ADMIN)
     @filter.platform_adapter_type(filter.PlatformAdapterType.AIOCQHTTP)
     @filter.event_message_type(filter.EventMessageType.GROUP_MESSAGE)
     @filter.command("禁言嘲讽黑名单")
     async def blacklist_cmd(self, event: AstrMessageEvent):
+        '''管理不发送禁言嘲讽消息的群聊黑名单，仅管理员可用。'''
         parts = event.get_message_str().strip().split()
         if len(parts) < 2:
             yield event.plain_result(
-                "用法：\n"
+                "用法（仅管理员可用）：\n"
                 "/禁言嘲讽黑名单 add 123456  - 添加群到黑名单\n"
                 "/禁言嘲讽黑名单 remove 123456  - 从黑名单移除\n"
                 "/禁言嘲讽黑名单 list  - 查看黑名单\n\n"
